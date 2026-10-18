@@ -4,7 +4,7 @@ Start with the [README](../README.md).
 
 ## Slash commands
 
-The package includes 58 skill directories: 34 public skills and 24 `principle-*` references. Claude Code uses `/astack:<name>`. In Codex, request a skill by name or install the [optional shortcuts](#codex) for the `/name` form below.
+The package includes 62 skill directories: 38 public skills and 24 `principle-*` references. Claude Code uses `/astack:<name>`. In Codex, request a skill by name or install the [optional shortcuts](#codex) for the `/name` form below.
 
 Find each skill's instructions in the [skills tree](../plugins/astack/skills/).
 
@@ -34,6 +34,10 @@ Find each skill's instructions in the [skills tree](../plugins/astack/skills/).
 | `/setup-astack` | configure AStack per-role model choices |
 | `/unslop` | clean up writing by removing AI tells |
 | `/no-comments` | strip comments before review, fix the accepted findings, encode claimed constraints |
+| `/create-formal-verification-skill` | create a project skill that verifies a high-risk invariant with a suitable formal tool |
+| `/in-your-own-words` | restate the user's goals and the problem they want to solve |
+| `/ketchup` | catch up on changes and calls waiting on the user |
+| `/sharpen` | tighten a plan or specification before building it |
 | `/create-verification-skill` | generate a project-local verification skill and feature map |
 | `/maintain-verification-skill` | re-sync a drifted verification skill and its feature map |
 | `/deslop` | deslop a diff before commit |
@@ -67,6 +71,6 @@ Bun is needed for bundled scripts. GitHub workflows need authenticated `gh`; som
 
 See [upstream workflow](upstream.md), [adaptations](adaptations.md), and [CONTRIBUTING](../CONTRIBUTING.md). The command table above is the generator's source for Codex prompt descriptions; maintain one row per public skill.
 
-The skill tree is synced against upstream `df581122cde17e6e27686b5a448bde23e4ad4318` (v0.15.15). The machine-readable pin in `tools/upstream.json` is authoritative. The update tool keeps this sentence current.
+The skill tree is synced against upstream `0b8e952052d482ee6de06deebf14d590d77b1b34` (v0.15.26). The machine-readable pin in `tools/upstream.json` is authoritative. The update tool keeps this sentence current.
 
 See [NOTICE](../NOTICE.md) and [LICENSE](../LICENSE) for attribution.

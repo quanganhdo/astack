@@ -2,7 +2,7 @@ import { expect, test } from "bun:test";
 import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, rmSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { syncComponent, parseSubstitutions } from "../tools/sync.mjs";
+import { syncComponent, parseSubstitutions, applySubstitutions, denylistHits } from "../tools/sync.mjs";
 
 for (const scenario of ["overlap", "removed-upstream"]) {
   test(`automatic sync preserves all files on ${scenario}`, () => {
@@ -116,3 +116,21 @@ for (const unsafe of ["../outside", "/absolute", "skills/../outside", "skills//e
     });
   });
 }
+
+// Immutable original excerpts cover the native portability failures found in 0.15.26.
+test("original 0.15.26 dispatch and transcript instructions translate to native capabilities", () => {
+  const fixture = JSON.parse(readFileSync(new URL("./fixtures/upstream-0.15.26.json", import.meta.url), "utf8"));
+  const { substitutions, denylist } = parseSubstitutions(JSON.parse(readFileSync(new URL("../tools/substitutions.json", import.meta.url), "utf8")));
+  const translated = new Map();
+  for (const { path, source } of fixture.excerpts) {
+    const { text } = applySubstitutions(source, substitutions, path);
+    expect(denylistHits(path, text, denylist)).toEqual([]);
+    expect(applySubstitutions(text, substitutions, path).text).toBe(text);
+    translated.set(path, text);
+  }
+  expect(translated.get("skills/poteto-mode/SKILL.md")).toContain("within user and project limits");
+  expect(translated.get("skills/poteto-mode/SKILL.md")).toContain("Never create a model identifier by appending effort or speed suffixes");
+  expect(translated.get("skills/poteto-mode/playbooks/orchestrate.md")).toContain("separate worktree or output directory for each writer");
+  expect(translated.get("skills/reflect/SKILL.md")).toContain("Stay within that project's directory");
+  expect(translated.get("skills/no-comments/SKILL.md")).toContain('subagent_type: "astack:comment-sicko"');
+});

@@ -15,7 +15,7 @@ The bootstrap retains the port reference's declared policy forks as well as its 
 
 The `pathRenames` map translates upstream `skills/setup-pstack` into local `skills/setup-astack`. Substitution file scopes keep their upstream paths. Generation, fork declarations, and sync reports use local paths. Unsafe paths or colliding destinations stop sync before it writes.
 
-AStack uses the `astack:` plugin namespace and `astack-models.md` configuration. The main workflow keeps the `poteto-mode` name; model and routing setup uses `setup-astack`. Claude invokes `/astack:poteto-mode` and `/astack:setup-astack`. Mechanical branding and the setup directory rename are applied during upstream translation. Original PStack names remain in source attribution, upstream paths, and legacy checkpoint compatibility.
+AStack uses the `astack:` plugin namespace and `astack-models.md` configuration. The main workflow keeps the `poteto-mode` name; model and routing setup uses `setup-astack`. Claude invokes `/astack:poteto-mode` and `/astack:setup-astack`. Mechanical branding and the setup directory rename are applied during upstream translation. The upstream root `plugin.json` is excluded alongside its Cursor manifest because AStack owns its runtime manifests. Original PStack names remain in source attribution, upstream paths, and legacy checkpoint compatibility.
 
 The Codex adapter uses available tools and model capabilities rather than assuming that every Codex surface exposes the same tool names. User and project instructions take precedence over all plugin guidance.
 

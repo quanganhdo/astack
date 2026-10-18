@@ -8,7 +8,7 @@ bun test tests/
   cd plugins/astack/skills/poteto-mode/scripts
   bun install --frozen-lockfile
   bun run typecheck
-  bun test orch watch-pr
+  bun run test
 )
 
 if bun -e 'import { findPiPackage } from "./tools/pi-package.mjs"; process.exit(findPiPackage() ? 0 : 1)'; then

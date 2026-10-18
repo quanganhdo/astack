@@ -1,5 +1,9 @@
 import { landingRevision, sameLandingRevision } from "./landing.ts";
-import { WatcherQueryError, resolveChecks } from "./github.ts";
+import {
+  WatcherQueryError,
+  resolveChecks,
+  resolveReviewThreads,
+} from "./github.ts";
 import { DeadlineExceeded, type WatchDeadline } from "./deadline.ts";
 import type * as T from "./types.ts";
 import { nonEmpty } from "./types.ts";
@@ -69,7 +73,7 @@ export async function readSnapshot(args: {
   if (facts.state === "CLOSED")
     return { kind: "closed", context: args.context, facts };
   const [threads, checks] = await Promise.all([
-    args.reader.reviewThreads(args.context),
+    resolveReviewThreads(args.reader, args.context),
     resolveChecks(args.reader, args.context),
   ]);
   const failed = nonEmpty(

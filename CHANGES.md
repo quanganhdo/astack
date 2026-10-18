@@ -1,5 +1,9 @@
 # AStack changes
 
+## 0.1.5 - Original PStack 0.15.26
+
+Adapt original cursor/plugins/pstack at 0b8e952052d482ee6de06deebf14d590d77b1b34. Add create-formal-verification-skill, in-your-own-words, ketchup, and sharpen. Import forge-backed orchestration and paginated review-thread handling while retaining AStack's declared authorization, merge safety, transcript, and test-sensitivity policies. Translate the new model, delegation, and driver wording for native runtimes.
+
 ## 0.1.4 - Consistent AStack naming
 
 Rename model setup to `setup-astack` and use AStack consistently in agent descriptions, runtime guidance, packaging, and generated configuration. Update upstream translation so future imports retain the new command and directory names. New checkpoints use `astack/resume`; existing checkpoints remain readable from the legacy location. Preserve original source attribution, upstream URLs, and release history. Add regression checks for naming, mapped sync paths, and checkpoint compatibility.

@@ -1,6 +1,99 @@
 {
   "substitutions": [
     {
+      "pattern": "every Task spawn",
+      "replacement": "every `Agent` spawn",
+      "rationale": "The new delegate prompt names the native Claude agent tool."
+    },
+    {
+      "pattern": "`.cursor-plugin/plugin.json`",
+      "replacement": "`.claude-plugin/plugin.json`",
+      "rationale": "Installed Claude plugin versions live in the native manifest."
+    },
+    {
+      "pattern": "does not mean pstack is absent",
+      "replacement": "does not mean AStack is absent",
+      "rationale": "The delegate fallback names the installed adaptation."
+    },
+    {
+      "pattern": "a chart or diagram from `/visualize`",
+      "replacement": "a chart or diagram from an available visualization tool",
+      "rationale": "Visualization capabilities differ by runtime and are not bundled in AStack.",
+      "files": "^skills/ketchup/SKILL\\.md$"
+    },
+    {
+      "pattern": "a `/visualize` chart for numbers",
+      "replacement": "an available chart tool for numbers",
+      "rationale": "Use an exposed visualization capability without assuming an external skill is installed.",
+      "files": "^skills/ketchup/SKILL\\.md$"
+    },
+    {
+      "pattern": "subagent_type: \"comment-sicko\"",
+      "replacement": "subagent_type: \"astack:comment-sicko\"",
+      "rationale": "Claude plugin agent dispatch requires its registered namespace in the revised no-comments instructions."
+    },
+    {
+      "pattern": "**Match the model to the job.** Before each spawn, start from the role's line or default and pick the reasoning level and speed the job needs. The `/setup-pstack` budget sets each role's starting level, xhigh by default. Raise it one step, up to max, for the hardest or subtlest work. Lower it one step for judgment and two or more steps for routine work. Use fast mode only when the job is urgent, meaning CI or trunk is red or a person is blocked on the result right now. Otherwise use standard speed, the same slug without `-fast`. Verification is the exception and stays on the `swarm workers` model and speed (`grok-4.7-xhigh-fast` by default). Change only the effort level and whether the slug is fast, and keep the family the role names, so a diverse panel stays diverse. If the family has no slug at that level and speed, use its nearest slug. A role on `auto` or `inherit-parent` stays on the parent model. If the Task tool rejects the adjusted slug, do not try another adjusted slug. Use the role's line or default and say so.",
+      "replacement": "**Match the model to the job.** Start from the configured role or its default in [Models](#models). Choose reasoning effort and speed only through fields and values the active runtime exposes, within user and project limits. Use stronger reasoning for difficult work and less for routine work. Use fast service only for an urgent blocked result when that service is available. Verification keeps the configured `swarm workers` model. Preserve each panel seat's configured family. An `auto` or `inherit-parent` role stays on the parent model. If an adjustment is rejected, use the configured role or available default and report the fallback. Never create a model identifier by appending effort or speed suffixes.",
+      "rationale": "Native runtimes expose effort and speed differently. Honor actual schemas and operator limits instead of manufacturing Cursor model slugs."
+    },
+    {
+      "pattern": "Families go by prefix: `claude-*`, and `grok-*` with `cursor-grok-*` and `composer-*`. A refused `composer-*` entry runs on `grok-4.7-xhigh-fast`.",
+      "replacement": "Families go by model name, such as Opus, Fable, or Sonnet.",
+      "rationale": "Resolve model families through native role defaults rather than Cursor-only aliases."
+    },
+    {
+      "pattern": "Families go by prefix: `claude-*`, and `grok-*` with `cursor-grok-*` and `composer-*`. A refused `composer-*` entry runs on Reviewer B's default.",
+      "replacement": "Families go by model name, such as Opus, Fable, or Sonnet.",
+      "rationale": "Reviewer fallbacks use native model families, without Cursor-only aliases."
+    },
+    {
+      "pattern": "Each owner is a Cursor cloud agent that builds",
+      "replacement": "Each owner is a background subagent in its own worktree that builds",
+      "rationale": "Preserve per-owner isolation through worktrees on native runtimes."
+    },
+    {
+      "pattern": "One verifier per PR, each a Cursor cloud agent, runs",
+      "replacement": "One independent background verifier per PR, in its own worktree, runs",
+      "rationale": "Run independent native verifiers with isolated worktrees."
+    },
+    {
+      "pattern": "with the matching control skill (such as `control-ui` or `control-cli` from `cursor-team-kit`)",
+      "replacement": "with the driver selected through poteto-mode's Non-negotiables",
+      "rationale": "Select an available driver for the real artifact instead of unavailable Cursor plugins."
+    },
+    {
+      "pattern": "through its control skill (such as `control-ui` or `control-cli` from `cursor-team-kit`) or a named driver",
+      "replacement": "through the driver selected through poteto-mode's Non-negotiables or another named available driver",
+      "rationale": "Preserve live artifact verification with native drivers."
+    },
+    {
+      "pattern": "nesting works to depth 3, and a nested spawn has the full Task schema including `environment`",
+      "replacement": "use nesting only when the active runtime exposes it, within its documented depth and tool schema",
+      "rationale": "Delegation depth and fields differ across runtimes. Do not assert Cursor dispatch capabilities."
+    },
+    {
+      "pattern": "- **Worker / verifier.** Always `environment: \"cloud\"` unless the task needs this machine: `control-ui` or `control-cli` runtime verification (from `cursor-team-kit`). Reading local transcripts under `agent-transcripts/`. Simulators and local IDE state. Auth that exists only here. Cloud agents cannot read the local store, so their briefs inline what they need or point at repo paths. Prefer fewer, broader workers. One writer per worktree or branch (principle-separate-before-serializing-shared-state). Run a unit's verifier on a different model family from its worker.",
+      "replacement": "- **Worker / verifier.** Use background subagents with a separate worktree or output directory for each writer. Resolve live artifact verification through poteto-mode's driver policy. Give each worker only the relevant local transcript, simulator, IDE, and authentication context its task needs. Briefs inline required facts or point at accessible repo paths. Prefer fewer, broader workers. One writer per worktree or branch (principle-separate-before-serializing-shared-state). Run a unit's verifier on a different model family from its worker.",
+      "rationale": "Native runtimes isolate writers with worktrees and expose different local tool access."
+    },
+    {
+      "pattern": "Verification is the exception and stays on the `swarm workers` model and speed (`grok-4.7-xhigh-fast` by default).",
+      "replacement": "Verification stays on the configured `swarm workers` model and speed (default in [Models](#models)).",
+      "rationale": "Verification uses the stamped native worker default."
+    },
+    {
+      "pattern": "Before fanning out, find this conversation's transcript in the `agent-transcripts/` directory the system prompt names. Do not glob across `~/.cursor/projects/*/`. That crosses workspace boundaries and reads private chats from unrelated projects.",
+      "replacement": "Before fanning out, find this conversation's transcript in Claude Code's per-project directory at `~/.claude/projects/<encoded-cwd>/`, where `<encoded-cwd>` is the working directory with `/` replaced by `-`. Stay within that project's directory. On another runtime, use its exposed transcript locator or the session digest allowed below.",
+      "rationale": "Keep reflection within the active project and allow the native transcript capability."
+    },
+    {
+      "pattern": "<agent-transcripts>",
+      "replacement": "~/.claude/projects/<encoded-cwd>",
+      "rationale": "Reflect transcript examples use the scoped Claude project directory.",
+      "files": "^skills/reflect/SKILL\\.md$"
+    },
+    {
       "regex": "default to one each on `(?:claude|gpt|grok|gemini|composer)-[^`]+` and `(?:claude|gpt|grok|gemini|composer)-[^`]+`\\.",
       "files": "^skills/arena/SKILL\\.md$",
       "replacement": "run one each on the defaults in [Models](#models).",
@@ -39,8 +132,8 @@
       "rationale": "Benchmark preparation must work on supported hosts without a Linux-only utility."
     },
     {
-      "pattern": "- Shipping UI / IDE / CLI → the matching control skill. `cursor-team-kit` publishes `control-cli` (CLIs and TUIs) and `control-ui` (browser / Electron / web UIs). For bug fixes, reproduce first on the same surface yourself. Hand to the user only under the narrow Bug fix step 1 exception.",
-      "replacement": "- Shipping UI / IDE / CLI → the driver skill. `run` ships with Claude Code and the model can invoke it for CLIs, TUIs, servers, and browser or Electron apps. The bundled `verify` runs only when the user types `/verify`, so for UIs use the project `verify` skill at `.claude/skills/verify/` (generate it with `/create-verification-skill`) and fall back to `run` when the repo has none. For bug fixes, reproduce first on the same surface yourself. Hand to the user only under the narrow Bug fix step 1 exception.",
+      "pattern": "- Shipping UI / IDE / CLI \u2192 the matching control skill. `cursor-team-kit` publishes `control-cli` (CLIs and TUIs) and `control-ui` (browser / Electron / web UIs). For bug fixes, reproduce first on the same surface yourself. Hand to the user only under the narrow Bug fix step 1 exception.",
+      "replacement": "- Shipping UI / IDE / CLI \u2192 the driver skill. `run` ships with Claude Code and the model can invoke it for CLIs, TUIs, servers, and browser or Electron apps. The bundled `verify` runs only when the user types `/verify`, so for UIs use the project `verify` skill at `.claude/skills/verify/` (generate it with `/create-verification-skill`) and fall back to `run` when the repo has none. For bug fixes, reproduce first on the same surface yourself. Hand to the user only under the narrow Bug fix step 1 exception.",
       "rationale": "Resolve surface drivers through the Claude Code and Codex portability policy instead of unavailable Cursor control plugins."
     },
     {
@@ -50,7 +143,7 @@
     },
     {
       "pattern": "The system prompt names the workspace's `agent-transcripts/` directory.",
-      "replacement": "Claude Code stores them at `~/.claude/projects/<encoded-cwd>/*.jsonl`, where `<encoded-cwd>` is the workspace's working directory with `/` → `-`.",
+      "replacement": "Claude Code stores them at `~/.claude/projects/<encoded-cwd>/*.jsonl`, where `<encoded-cwd>` is the workspace's working directory with `/` \u2192 `-`.",
       "rationale": "Claude Code's system prompt does not name a transcripts directory, so the port names the path and its encoding"
     },
     {
