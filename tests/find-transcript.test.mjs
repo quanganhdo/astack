@@ -35,6 +35,31 @@ function transcript(dir, rel, lines, mtimeSeconds) {
 }
 
 describe("find-transcript", () => {
+  test("a pi session follows the active branch to its opening prompt", async () => {
+    const dir = tempDir();
+    const records = [
+      { type: "session", version: 3, cwd: dir },
+      { type: "message", id: "old", parentId: null, message: { role: "user", content: "abandoned task" } },
+      { type: "message", id: "current", parentId: null, message: { role: "user", content: [{ type: "text", text: "current task" }] } },
+      { type: "message", id: "answer", parentId: "current", message: { role: "assistant", content: [] } },
+      { type: "message", id: "followup", parentId: "answer", message: { role: "user", content: "continue" } },
+    ];
+    const path = transcript(dir, "pi.jsonl", records.map(JSON.stringify), 100);
+    expect(await openingPrompt(path)).toBe("current task");
+    expect(await findTranscript(dir, "abandoned task")).toBeNull();
+  });
+
+  test("a pi branch without a user message does not inherit an abandoned prompt", async () => {
+    const dir = tempDir();
+    const records = [
+      { type: "session", version: 3, cwd: dir },
+      { type: "message", id: "old", parentId: null, message: { role: "user", content: "abandoned task" } },
+      { type: "custom", id: "new", parentId: null },
+    ];
+    const path = transcript(dir, "pi.jsonl", records.map(JSON.stringify), 100);
+    expect(await openingPrompt(path)).toBeNull();
+  });
+
   test("the opening prompt is the first user record, not the first line", async () => {
     const dir = tempDir();
     const path = transcript(dir, "a.jsonl", [meta, summary, assistant, user("fix the flaky login test")], 100);

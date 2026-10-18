@@ -6,8 +6,8 @@
 // Prints the newest matching path, or exits 1 with "no transcript". Covers the
 // three layouts under one per-project directory: flat <id>.jsonl, nested
 // <id>/<id>.jsonl, and subagent <id>/subagents/<child>.jsonl. Each candidate is
-// streamed line by line and abandoned at its first `user` record; the first
-// line is session metadata and files run to megabytes.
+// streamed line by line. Pi sessions follow the active branch from the last
+// entry; Claude Code scans stop at the first user record.
 import { createReadStream, readdirSync, realpathSync, statSync } from "node:fs";
 import { join } from "node:path";
 import process from "node:process";
@@ -44,6 +44,9 @@ function text(content) {
 export async function openingPrompt(path) {
   const stream = createReadStream(path, { encoding: "utf8" });
   const lines = createInterface({ input: stream, crlfDelay: Infinity });
+  let pi = false;
+  let leaf = null;
+  const entries = new Map();
   try {
     for await (const line of lines) {
       let record;
@@ -52,13 +55,30 @@ export async function openingPrompt(path) {
       } catch {
         continue;
       }
-      if (record?.type === "user") return text(record.message?.content);
+      if (record?.type === "session" && Number.isInteger(record.version) && typeof record.cwd === "string") {
+        pi = true;
+        continue;
+      }
+      if (pi) {
+        if (typeof record?.id !== "string") continue;
+        entries.set(record.id, {
+          parentId: typeof record.parentId === "string" ? record.parentId : null,
+          prompt: record.type === "message" && record.message?.role === "user" ? text(record.message.content) : null,
+        });
+        leaf = record.id;
+      } else if (record?.type === "user") return text(record.message?.content);
     }
+    let prompt = null;
+    const seen = new Set();
+    for (let id = leaf; entries.has(id) && !seen.has(id); id = entries.get(id).parentId) {
+      seen.add(id);
+      prompt = entries.get(id).prompt || prompt;
+    }
+    return prompt;
   } finally {
     lines.close();
     stream.destroy();
   }
-  return null;
 }
 
 export async function findTranscript(projectsDir, fragment) {
