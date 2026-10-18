@@ -51,15 +51,19 @@ Find each skill's instructions in the [skills tree](../plugins/astack/skills/).
 
 ## Runtime support
 
-Claude Code and Codex share one skills tree and have native manifests and routing hooks. Other runtimes are outside AStack's release support contract. Imported examples for other runtimes are historical reference, not tested support claims.
+Claude Code, Codex, and pi share one skills tree. Claude Code and Codex use native manifests and routing hooks. Pi 1.3.0 or later uses the repository package and native extension. Other runtimes are outside AStack's release support contract. Imported examples for other runtimes are historical reference, not tested support claims.
 
 ### Codex
 
 Use the native marketplace installation in the [README](../README.md#codex). Request an installed skill by name. The [Codex mapping](../plugins/astack/skills/poteto-mode/references/codex-tools.md) maps workflow actions to available capabilities. Optional prompt stubs live in `.codex-plugin/prompts`; they are not required for native skill discovery.
 
+### Pi
+
+See [pi setup](pi.md). Invoke skills with `/skill:<name>` and use `/astack-agents` to inspect children. The extension loads `astack-models.md` and optional `astack-policy.json` from the pi agent directory. The [pi mapping](../plugins/astack/skills/poteto-mode/references/pi-tools.md) describes concrete tools and limitations.
+
 ### Automatic routing
 
-Both manifests use the SessionStart hook. Review hook trust in the host. To disable routing, use `/astack:setup-astack` on Claude or request setup-astack on Codex and set `session hook: off`. AStack reads `astack-models.md` in that runtime's configuration directory.
+Both manifests use the SessionStart hook. Review hook trust in the host. To disable routing, use `/astack:setup-astack` on Claude or request setup-astack on Codex and set `session hook: off`. AStack reads `astack-models.md` in that runtime's configuration directory. On pi, the extension applies the same routing opt-out on each run.
 
 ## Configuration and dependencies
 

@@ -38,8 +38,9 @@ jobs:
         run: bun tools/typecheck-pi.mjs
         env:
           PI_PACKAGE_DIR: ${{ runner.temp }}/astack-pi/node_modules/@earendil-works/pi-coding-agent
-      - name: Verify installed package startup without model requests
-        run: bun test tests/pi/runtime.test.mjs
+      - name: Verify model catalog and installed startup without model requests
+        run: bun test tests/pi/catalog.test.mjs tests/pi/runtime.test.mjs
         env:
           PI_PACKAGE_DIR: ${{ runner.temp }}/astack-pi/node_modules/@earendil-works/pi-coding-agent
           ASTACK_PI_REQUIRE_RUNTIME: "1"
+          ASTACK_PI_REQUIRE_CATALOG: "1"

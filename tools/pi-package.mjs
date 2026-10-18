@@ -1,15 +1,9 @@
-// The installed @earendil-works/pi-coding-agent package: PI_PACKAGE_DIR when
-// set, otherwise a local install or the first global install under npm's root,
-// Homebrew's, or bun's, or null.
 import { execFileSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-// Where `bun add -g` puts node_modules: bun's own order is BUN_INSTALL_GLOBAL_DIR,
-// then $BUN_INSTALL/install/global, then $XDG_CACHE_HOME/.bun/install/global,
-// then ~/.bun/install/global. A bunfig or CLI global directory is not read.
 function bunRoots() {
   const { BUN_INSTALL_GLOBAL_DIR, BUN_INSTALL, XDG_CACHE_HOME } = process.env;
   return [
@@ -29,8 +23,6 @@ function npmRoot() {
   }
 }
 
-// `brew install pi-coding-agent` keeps Pi's npm tree in the formula's libexec,
-// reachable through the opt link that survives upgrades.
 function homebrewRoot() {
   try {
     const prefix = execFileSync("brew", ["--prefix"], { encoding: "utf8" }).trim();
@@ -46,8 +38,6 @@ export function findPiPackage() {
   return roots.filter(Boolean).map((root) => join(root, "@earendil-works/pi-coding-agent")).find((dir) => existsSync(join(dir, "package.json"))) ?? null;
 }
 
-// npm nests the package's dependencies in its own node_modules; bun's global
-// directory is flat, so there they sit beside the package's scope.
 export function piDependency(piDir, name) {
   return [join(piDir, "node_modules", name), join(piDir, "..", "..", name)].find(existsSync) ?? null;
 }

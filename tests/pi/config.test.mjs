@@ -2,9 +2,11 @@
 import { expect, test } from "bun:test";
 import { chmodSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { homedir, tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, relative } from "node:path";
+import { pathToFileURL } from "node:url";
 
 import { defaultSettings, loadAgentTypes, readSheet } from "../../plugins/astack/pi/config.ts";
+import { readPolicy } from "../../plugins/astack/pi/dispatch.ts";
 import { chmodDeniesReads } from "./sheet-fixtures.mjs";
 
 test("depth comes from the reader on each use and PI_CODING_AGENT_DIR moves the sheet", () => {
@@ -15,6 +17,22 @@ test("depth comes from the reader on each use and PI_CODING_AGENT_DIR moves the 
   expect(settings.depth).toBe(2);
   expect(settings.agentDir).toBe("/tmp/pi-agent-x");
   expect(defaultSettings(() => 0, {}).agentDir).toBe(join(homedir(), ".pi", "agent"));
+});
+
+test("pi-compatible tilde and file URL directories retain the host policy", () => {
+  const dir = mkdtempSync(join(tmpdir(), "astack-policy-path-"));
+  const policy = { permittedModels: ["openai-codex/gpt-6-luna"], allowedEfforts: ["medium"], defaultEffort: "medium", fallbackEffort: "medium" };
+  try {
+    writeFileSync(join(dir, "astack-policy.json"), JSON.stringify(policy));
+    for (const value of [`~/${relative(homedir(), dir)}`, pathToFileURL(dir).href]) {
+      const settings = defaultSettings(() => 0, { PI_CODING_AGENT_DIR: value });
+      expect(settings.agentDir).toBe(dir);
+      expect(readPolicy(settings.agentDir)).toEqual(policy);
+    }
+    expect(defaultSettings(() => 0, { PI_CODING_AGENT_DIR: "~" }).agentDir).toBe(homedir());
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });
 
 test("an agent file's effort is checked against the efforts list in models.json", () => {

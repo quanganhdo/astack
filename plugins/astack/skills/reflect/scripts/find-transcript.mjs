@@ -3,11 +3,6 @@
 //
 //   node find-transcript.mjs <projects-dir> <opening-prompt-fragment>
 //
-// Prints the newest matching path, or exits 1 with "no transcript". Covers the
-// three layouts under one per-project directory: flat <id>.jsonl, nested
-// <id>/<id>.jsonl, and subagent <id>/subagents/<child>.jsonl. Each candidate is
-// streamed line by line. Pi sessions follow the active branch from the last
-// entry; Claude Code scans stop at the first user record.
 import { createReadStream, readdirSync, realpathSync, statSync } from "node:fs";
 import { join } from "node:path";
 import process from "node:process";

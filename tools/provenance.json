@@ -6,5 +6,10 @@
     "commit": "eefcfaf31343a0c98d4bf0dc74a55d62b35ce9f9",
     "relationship": "One-time attributed source import; not an update or runtime dependency"
   },
-  "astackRevision": 0
+  "astackRevision": 0,
+  "piAdapterReference": {
+    "repository": "https://github.com/michael-denyer/pstack-claude",
+    "commit": "046341e3aaf2405083973a37f860d0d2ea98e18a",
+    "relationship": "Selective attributed pi adapter and test import; not an update dependency"
+  }
 }

@@ -39,7 +39,7 @@ Then ask for the default reasoning effort, the `default effort` line. It is `ses
 
 ### 4. Choose whether the session hook routes tasks
 
-On Claude Code and Codex, the plugin's `SessionStart` hook injects the poteto-mode mandate on startup, resume, clear, and compact. Codex asks the user to trust plugin hooks through `/hooks` before running them. Ask whether to keep the hook. The default is on. The answer is the `session hook` line in the current runtime's sheet: `on` or `off`. With no sheet or no line, the hook injects. The line is inert on other runtimes.
+On Claude Code and Codex, the plugin's `SessionStart` hook injects the poteto-mode mandate on startup, resume, clear, and compact. Codex asks the user to trust plugin hooks through `/hooks` before running them. Ask whether to keep the hook. The default is on. The answer is the `session hook` line in the current runtime's sheet: `on` or `off`. With no sheet or no line, the hook injects. On pi, the native extension reads the same setting and adds routing instructions at each run. The line is inert on other runtimes.
 
 ### 5. Validate
 
@@ -82,21 +82,28 @@ On Claude Code, if `<config>/CLAUDE.md` does not already include `<config>/astac
 
 On Codex, paste the model rows and the `default effort` line into `<codex-home>/AGENTS.md`; Codex has no `@` include. Do not paste the `session hook` line there: the plugin hook reads it directly from `<codex-home>/astack-models.md`.
 
+On pi, write the sheet in `$PI_CODING_AGENT_DIR` or `~/.pi/agent`. Write concrete model choices as full `provider/id` values or use the supported family aliases. The extension injects the sheet into each run, so do not add an include to another instructions file.
+
 ### 8. Confirm
 
 Tell the user where the override was written, how its model rows load, and whether the plugin hook is on. Re-running this skill updates the override sheet.
 
 ## Other runtimes
 
-The role lines are the same everywhere. What differs is the sheet path, how the runtime loads it, and how you list models. Detect models with the runtime's own tool and never write a slug you have not seen listed. A runtime whose subagent call has no model parameter still gets the sheet, as the record of the user's choice, and applies it where it can. The `session hook` line applies to the Claude Code and Codex plugins.
+The role lines are the same everywhere. What differs is the sheet path, how the runtime loads it, and how you list models. Detect models with the runtime's own tool and never write a slug you have not seen listed. A runtime whose subagent call has no model parameter still gets the sheet, as the record of the user's choice, and applies it where it can. The `session hook` line applies to the Claude Code and Codex plugins and the native pi extension.
 
 | Runtime | Sheet | Load | List models | Status |
 | --- | --- | --- | --- | --- |
 | Claude Code | `<config>/astack-models.md` | `@<config>/astack-models.md` in `<config>/CLAUDE.md` | the `Agent` tool's model parameter | verified live |
 | Codex | `<codex-home>/astack-models.md` | model rows: paste into `<codex-home>/AGENTS.md`; hook setting: read by the plugin | your configured Codex models, see [codex-tools.md](../poteto-mode/references/codex-tools.md#model-names) | hook contract tested; discovery verified |
+| Pi | `astack-models.md` in `$PI_CODING_AGENT_DIR` or `~/.pi/agent` | read by the native extension on each run | `pi --list-models`, see [pi-tools.md](../poteto-mode/references/pi-tools.md) | offline lifecycle and native startup checks; live provider checks are separate |
 | opencode | `~/.config/opencode/astack-models.md` | add the path to the `instructions` array in `opencode.json` | the `models` slash command in the session | from published docs, no live session |
 | Gemini CLI | `~/.gemini/astack-models.md` | `@~/.gemini/astack-models.md` in `~/.gemini/GEMINI.md` | the `model` slash command in the session | from published docs, no live session |
 | Prime Agent | no documented sheet path; Prime's configuration chooses models | | | no live session |
+
+### Pi dispatch restrictions
+
+When the user requests model or effort restrictions on pi, write `astack-policy.json` beside the model sheet. Its strict fields are `permittedModels`, a nonempty list of full provider/model IDs, `allowedEfforts`, a nonempty subset of low, medium, and high, `defaultEffort`, and `fallbackEffort`, which must be medium. Both default and fallback effort must be allowed. Validate the choices against pi's catalog. Do not write a policy just because the package loads. Explain that role rows guide choices while this policy controls new and resumed AStack child launches. The pi mapping describes preflight fallback and session limits.
 
 ## Models
 

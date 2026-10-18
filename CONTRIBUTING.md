@@ -36,3 +36,9 @@ Validate workflow changes with actionlint. Inspect workflow permissions and publ
 AStack has its own semver in `VERSION`. Add a matching `## <version> - <title>` entry to `CHANGES.md`, regenerate, and pass the checks. Keep the upstream version and immutable commit separate in provenance and pins. Automatic upstream updates increment AStack's patch version; AStack-only changes may bump its version independently.
 
 Set up scheduled updates using the portable [maintenance runbook](docs/maintenance.md) and authenticated Claude Code and Codex installations. The optional GitHub publisher requires an ephemeral validation runner, trusted runtime checker, and release environment. No release should claim that tests ran if only manifests were validated. Publishing details and recovery procedures are in [the upstream workflow](docs/upstream.md).
+
+## Pi changes
+
+The repository root is a pi package. The same shared skill tree serves all supported runtimes. Keep runtime code in `plugins/astack/pi` and model aliases in `plugins/astack/models.json`. Record host restrictions in the consuming host's policy, not in shared workflow defaults.
+
+For pi changes, run the root frozen install, generation, repository tests, and `bun tools/typecheck-pi.mjs` against pi 1.3.0 or later. Use `ASTACK_PI_REQUIRE_RUNTIME=1 bun test tests/pi/runtime.test.mjs` to require native startup checks rather than skip them when pi is missing. Follow [runtime acceptance](docs/runtime-acceptance.md) before claiming live provider validation.

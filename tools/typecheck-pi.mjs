@@ -1,7 +1,3 @@
-// Typechecks the Pi extension under strict against an installed Pi package:
-// its API types, its typebox, and its @types/node, which are what the
-// extension runs with inside Pi. CI installs a pinned version in a disposable
-// directory and points PI_PACKAGE_DIR at it. Pi is not a dev dependency.
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";

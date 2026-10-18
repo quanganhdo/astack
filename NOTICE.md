@@ -60,3 +60,7 @@ Port-authored files covered by this notice include:
 - `CHANGES.md`
 
 `LICENSE-cursor-team-kit` is copied verbatim from upstream cursor-team-kit rather than authored for this port.
+
+## Native pi adapter
+
+The files under `plugins/astack/pi/` and `tests/pi/`, plus the pi SDK discovery and typecheck helpers, adapt Michael Denyer's pi implementation from [pstack-claude at 046341e](https://github.com/michael-denyer/pstack-claude/tree/046341e3aaf2405083973a37f860d0d2ea98e18a). They use the existing MIT license, which retains Michael Denyer's copyright. AStack changes the namespace, integrates shared packaging, and adds optional host dispatch restrictions. The exact source revision is recorded separately from the original PStack update pins.

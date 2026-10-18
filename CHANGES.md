@@ -1,5 +1,9 @@
 # AStack changes
 
+## 0.2.0 - Native pi support
+
+Add a native pi package sharing the existing skills, with local agents, RPC lifecycle, steering, cancellation, questions, worktrees, session loops, and routing. Add optional host-owned model and effort restrictions checked before new and resumed child launches. Support active-branch pi transcript lookup and pi 1.3.0 packaging, typecheck, policy, lifecycle, and startup checks. Keep live provider acceptance separate from offline evidence.
+
 ## 0.1.5 - Original PStack 0.15.26
 
 Adapt original cursor/plugins/pstack at 0b8e952052d482ee6de06deebf14d590d77b1b34. Add create-formal-verification-skill, in-your-own-words, ketchup, and sharpen. Import forge-backed orchestration and paginated review-thread handling while retaining AStack's declared authorization, merge safety, transcript, and test-sensitivity policies. Translate the new model, delegation, and driver wording for native runtimes.

@@ -39,14 +39,22 @@ function piInvocation(): Settings["pi"] {
   return /^(node|bun)(\.exe)?$/.test(exe) ? { command: "pi", args: [] } : { command: process.execPath, args: [] };
 }
 
-// readDepth is called on each use: pi parses extension flags after it loads
-// the extension.
+function agentDirectory(configured: string): string {
+  if (configured === "~") return homedir();
+  if (configured.startsWith("~/") || (process.platform === "win32" && configured.startsWith("~\\"))) {
+    return join(homedir(), configured.slice(2));
+  }
+  if (configured.startsWith("file://")) return fileURLToPath(configured);
+  return configured;
+}
+
+// Pi parses extension flags after it loads the extension.
 export function defaultSettings(readDepth: () => number, env: NodeJS.ProcessEnv = process.env): Settings {
   const pluginRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
   return {
     pluginRoot,
     modelsFile: join(pluginRoot, "models.json"),
-    agentDir: env.PI_CODING_AGENT_DIR || join(homedir(), ".pi", "agent"),
+    agentDir: agentDirectory(env.PI_CODING_AGENT_DIR || join(homedir(), ".pi", "agent")),
     pi: piInvocation(),
     get depth() {
       return readDepth();

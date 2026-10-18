@@ -41,7 +41,6 @@ function available(model: string, registry: ExtensionContext["modelRegistry"]): 
   return found !== undefined && registry.hasConfiguredAuth(found);
 }
 
-// Called for each process launch, including restored sessions, before disk writes.
 export function prepareDispatch({ agentDir, model, thinking, registry }: {
   agentDir: string;
   model: string | undefined;
