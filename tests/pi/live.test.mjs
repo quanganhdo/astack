@@ -1,6 +1,6 @@
 // The astack Pi extension end to end on real pi and real models. Skipped unless
 // ASTACK_PI_LIVE=1. Each run builds a throwaway PI_CODING_AGENT_DIR with the
-// user's credentials symlinked in and this repo installed as a package, so
+// user's credentials copied in and this repo installed as a package, so
 // children load astack too. Nothing under ~/.pi is written.
 //
 // The aliases resolve through the shipped models.json table of
@@ -9,7 +9,7 @@
 // alias. ASTACK_PI_LIVE_KEEP=1 keeps the throwaway directory for inspection.
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { spawn, spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, rmSync, statSync, symlinkSync, writeFileSync } from "node:fs";
+import { chmodSync, copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { homedir, tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -61,7 +61,8 @@ suite("astack on live pi", () => {
     work = join(root, "work");
     mkdirSync(agentDir);
     mkdirSync(work);
-    symlinkSync(join(homedir(), ".pi", "agent", "auth.json"), join(agentDir, "auth.json"));
+    copyFileSync(join(homedir(), ".pi", "agent", "auth.json"), join(agentDir, "auth.json"));
+    chmodSync(join(agentDir, "auth.json"), 0o600);
     env = { ...process.env, PI_CODING_AGENT_DIR: agentDir, PI_TELEMETRY: "0" };
     const install = spawnSync("pi", ["install", repoRoot], { cwd: work, env, encoding: "utf8" });
     if (install.status !== 0) throw new Error(`pi install failed: ${install.stderr}`);
