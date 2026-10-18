@@ -37,6 +37,8 @@ import {
   stampLeadLine,
   fenceUnder,
   loadModels,
+  parseModels,
+  piModelNamesSection,
   parseFrontmatter,
   promptStub,
   publicSkills,
@@ -212,12 +214,17 @@ describe("manifests", () => {
   const codex = json("plugins/astack/.codex-plugin/plugin.json");
   const claudeMarketplace = json(".claude-plugin/marketplace.json");
   const codexMarketplace = json(".agents/plugins/marketplace.json");
+  const pi = json("package.json");
 
   test("the plugin and marketplace manifests agree on every fact they repeat", () => {
     const shared = ({ name, author, homepage, repository, license, keywords }) =>
       ({ name, author, homepage, repository, license, keywords });
     expect([claude.name, claude.author, claude.license, claude.keywords]).not.toContain(undefined);
     expect(shared(codex)).toEqual(shared(claude));
+    expect(pi.name).toBe(claude.name);
+    expect(pi.author).toEqual(claude.author);
+    expect(pi.license).toBe(claude.license);
+    expect(pi.version).toBe(readFileSync(join(repoRoot, "VERSION"), "utf8").trim());
     expect(claudeMarketplace.owner).toEqual(claude.author);
     expect(claudeMarketplace.plugins.map(({ name, source }) => [name, source])).toEqual([[claude.name, "./plugins/astack"]]);
     expect(codexMarketplace.name).toBe(claudeMarketplace.name);
@@ -728,6 +735,16 @@ describe("plan, changes, apply", () => {
     for (const [file] of leadFiles) expect(files[file]).toBe(readFileSync(join(repoRoot, file), "utf8"));
   });
 
+  test("VERSION stamps the native Pi package and requires its manifest", () => {
+    const root = repoCopy();
+    const manifest = join(root, "package.json");
+    const pkg = JSON.parse(readFileSync(manifest, "utf8"));
+    writeFileSync(manifest, JSON.stringify({ ...pkg, version: "0.0.0" }, null, 2) + "\n");
+    expect(JSON.parse(plan(root).files["package.json"])).toEqual(pkg);
+    rmSync(manifest);
+    expect(() => plan(root)).toThrow("package.json");
+  });
+
   test("two producers on one path compose", () => {
     const root = repoCopy();
     const manifest = "plugins/astack/.claude-plugin/plugin.json";
@@ -819,6 +836,42 @@ describe("plan, changes, apply", () => {
         expect.stringContaining(`${manifest}: `),
         expect.stringContaining("plugins/astack/skills/tdd/SKILL.md:"),
       ]);
+    }
+  });
+});
+
+
+describe("Pi model mapping generation", () => {
+  const raw = () => JSON.parse(readFileSync(join(repoRoot, "plugins/astack/models.json"), "utf8"));
+  const fixture = () => {
+    const policy = raw();
+    policy.pi = {
+      fallback: "fixture",
+      models: { fixture: Object.fromEntries(policy.available.map((alias) => [alias, `fixture/model-${alias}`])) },
+    };
+    return policy;
+  };
+
+  test("renders each central alias and provider without embedding personal model preferences", () => {
+    const policy = parseModels(fixture(), () => true);
+    const text = piModelNamesSection(policy);
+    for (const alias of policy.available) expect(text).toContain(`| \`${alias}\` | \`fixture/model-${alias}\` |`);
+    const file = "plugins/astack/skills/poteto-mode/references/pi-tools.md";
+    const prose = applyRegions(file, "# Pi\n\n## Model names\n\nstale\n", policy);
+    expect(prose).toContain(text);
+    expect(strayModelSlugs(file, prose, policy)).toEqual([]);
+  });
+
+  test("rejects missing aliases, unknown aliases, malformed IDs, and absent fallback providers", () => {
+    for (const mutate of [
+      (p) => delete p.pi.models.fixture[p.available[0]],
+      (p) => p.pi.models.fixture.unknown = "fixture/model",
+      (p) => p.pi.models.fixture[p.available[0]] = "other/model",
+      (p) => p.pi.fallback = "missing",
+    ]) {
+      const policy = fixture();
+      mutate(policy);
+      expect(() => parseModels(policy, () => true)).toThrow("pi.");
     }
   });
 });

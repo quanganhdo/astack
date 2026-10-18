@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")/.."
+bun install --frozen-lockfile
 bun tools/generate.mjs --check
 bun test tests/
 (
@@ -9,3 +10,9 @@ bun test tests/
   bun run typecheck
   bun test orch watch-pr
 )
+
+if bun -e 'import { findPiPackage } from "./tools/pi-package.mjs"; process.exit(findPiPackage() ? 0 : 1)'; then
+  bun tools/typecheck-pi.mjs
+else
+  echo "Pi is not installed; extension typecheck and installed startup require the dedicated Pi CI job."
+fi

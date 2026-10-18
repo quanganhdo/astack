@@ -5,7 +5,7 @@
 // nothing and fails when a committed copy is stale, so it cannot ship.
 //
 // Sources of truth:
-//   VERSION  -> the "version" field in the three plugin manifests
+//   VERSION  -> the "version" field in the plugin manifests and native Pi package
 //   CHANGES.md must carry a heading for the current VERSION (release completeness)
 //   each skill's frontmatter (name + description) defines the shared Agent
 //   Skills boundary consumed natively by Codex, Prime, opencode, and Gemini CLI
@@ -62,6 +62,7 @@ const PROMPTS = `${PLUGIN}/.codex-plugin/prompts`;
 const EFFORT_AGENTS = `${PLUGIN}/effort-agents`;
 
 const VERSIONED_MANIFESTS = [
+  "package.json",
   ".claude-plugin/marketplace.json",
   "plugins/astack/.claude-plugin/plugin.json",
   "plugins/astack/.codex-plugin/plugin.json",
@@ -376,6 +377,12 @@ export function regions(models) {
       locate: fenceUnder("Write the override sheet", "markdown"),
       render: () => [overrideSheetBlock(models)],
     },
+    ...(models.pi ? [{
+      file: "plugins/astack/skills/poteto-mode/references/pi-tools.md",
+      name: "Pi model names section",
+      locate: section("Model names"),
+      render: () => blankPadded(piModelNamesSection(models)),
+    }] : []),
     {
       file: "plugins/astack/skills/poteto-mode/references/codex-tools.md",
       name: "Model names section",
@@ -522,6 +529,27 @@ export function parseModels(raw, skillExists) {
   for (const [tier, value] of Object.entries(raw.codex)) {
     if (!Object.hasOwn(raw.tiers, tier)) fail(`codex names "${tier}", which is not a tier`);
     unique([value].flat(), `codex "${tier}"`);
+  }
+  if (raw.pi !== undefined) {
+    const pi = raw.pi;
+    if (!pi || typeof pi !== "object" || !pi.models || typeof pi.models !== "object" || Array.isArray(pi.models)) {
+      fail('"pi.models" must be a provider table');
+    }
+    if (!Object.hasOwn(pi.models, pi.fallback)) fail('"pi.fallback" must name a provider in pi.models');
+    for (const [provider, aliases] of Object.entries(pi.models)) {
+      if (!/^[a-z0-9][a-z0-9-]*$/.test(provider) || !aliases || typeof aliases !== "object" || Array.isArray(aliases)) {
+        fail(`pi.models provider "${provider}" must have an alias table`);
+      }
+      for (const alias of raw.available) {
+        if (!Object.hasOwn(aliases, alias)) fail(`pi.models.${provider} has no model for alias "${alias}"`);
+      }
+      for (const [alias, id] of Object.entries(aliases)) {
+        if (!available.has(alias)) fail(`pi.models.${provider} names unknown alias "${alias}"`);
+        if (typeof id !== "string" || !id.startsWith(`${provider}/`) || !/^[^/\s]+\/[^\s]+$/.test(id)) {
+          fail(`pi.models.${provider}.${alias} must be a full "${provider}/id"`);
+        }
+      }
+    }
   }
   return resolveModels(raw);
 }
@@ -681,6 +709,28 @@ export function overrideSheetBlock(models) {
     "any other value, or no line, leaves it on.\n\n" +
     rows +
     `\n\ndefault effort: ${models.defaultEffort}\nsession hook: on`
+  );
+}
+
+export function piModelNamesSection(models) {
+  const { fallback, models: tables } = models.pi;
+  const providers = Object.keys(tables);
+  const table = [
+    `| Alias | ${providers.map(code).join(" | ")} |`,
+    `| --- |${" --- |".repeat(providers.length)}`,
+    ...models.available.map((alias) => `| ${code(alias)} | ${providers.map((provider) => code(tables[provider][alias])).join(" | ")} |`),
+  ].join("\n");
+  return (
+    "Pass the aliases from a skill's Models section to the Pi `agent` tool's `model` argument. " +
+    "The extension uses the parent model's provider column and falls back to " + code(fallback) +
+    " when that provider has no column. These package defaults come from `plugins/astack/models.json`.\n\n" +
+    table +
+    "\n\nA `pi models: alias=provider/id` line in the host's `astack-models.md` sheet overrides an alias. " +
+    "The tool also accepts a full `provider/id`. `inherit-parent`, `auto`, or an omitted model uses the parent model. " +
+    "An optional `astack-policy.json` in Pi's agent directory restricts permitted models and reasoning efforts. " +
+    "The extension validates that policy and checks model availability and configured authentication before launch. " +
+    "Keep personal model restrictions in host configuration. Diverse panels need distinct available models; " +
+    "record reduced diversity when the configured provider exposes only one model family."
   );
 }
 
