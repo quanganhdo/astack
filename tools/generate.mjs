@@ -535,7 +535,9 @@ export function parseModels(raw, skillExists) {
     if (!pi || typeof pi !== "object" || !pi.models || typeof pi.models !== "object" || Array.isArray(pi.models)) {
       fail('"pi.models" must be a provider table');
     }
-    if (!Object.hasOwn(pi.models, pi.fallback)) fail('"pi.fallback" must name a provider in pi.models');
+    if (typeof pi.fallback !== "string" || !Object.hasOwn(pi.models, pi.fallback)) {
+      fail('"pi.fallback" must name a provider in pi.models');
+    }
     for (const [provider, aliases] of Object.entries(pi.models)) {
       if (!/^[a-z0-9][a-z0-9-]*$/.test(provider) || !aliases || typeof aliases !== "object" || Array.isArray(aliases)) {
         fail(`pi.models provider "${provider}" must have an alias table`);
