@@ -40,7 +40,7 @@ if (args[0] === 'pr' && args[1] === 'view') {
 } else if (args[0] === 'pr' && args[1] === 'checks') {
   value = [{ name: 'ci', state: 'SUCCESS', bucket: 'pass', description: '', link: '', workflow: '' }];
 } else if (args[0] === 'pr' && args[1] === 'list') {
-  value = [{ number: 1, headRefName: 'main', baseRefName: 'main', headRepository: { name: 'repo', nameWithOwner: 'fork/repo' }, headRepositoryOwner: { login: 'fork' } }];
+  value = [{ number: 1, headRefName: 'main', baseRefName: 'main', isCrossRepository: true, headRepository: { name: 'repo', nameWithOwner: 'fork/repo' }, headRepositoryOwner: { login: 'fork' } }];
 } else if (args.some(a => a.includes('query ReviewThreads'))) {
   const after = args.find(a => a.startsWith('after='));
   const thread = (n, resolved) => ({ id: 't' + n, isResolved: resolved, comments: { nodes: [] } });

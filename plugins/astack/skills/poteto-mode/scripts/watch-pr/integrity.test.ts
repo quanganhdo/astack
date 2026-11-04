@@ -242,6 +242,7 @@ describe("commit identity", () => {
 describe("stack branch ambiguity", () => {
   const pr = (number: number, headRefName: string, baseRefName: string) => ({
     number: parsePrNumber(number),
+    isCrossRepository: false,
     headRepository: context,
     headRefName,
     baseRefName,
@@ -293,12 +294,14 @@ it("rejects a repository-local cycle without walking forever", () => {
     orderStack(context, [
       {
         number: context.number,
+        isCrossRepository: false,
         headRepository: context,
         headRefName: "a",
         baseRefName: "b",
       },
       {
         number: parsePrNumber(2),
+        isCrossRepository: false,
         headRepository: context,
         headRefName: "b",
         baseRefName: "a",
@@ -311,12 +314,14 @@ it("includes a fork PR whose base genuinely depends on a local parent", () => {
   const result = orderStack(context, [
     {
       number: context.number,
+      isCrossRepository: false,
       headRepository: context,
       headRefName: "base",
       baseRefName: "main",
     },
     {
       number: parsePrNumber(2),
+      isCrossRepository: true,
       headRepository: { owner: "fork", repo: "repo" },
       headRefName: "foreign",
       baseRefName: "base",
@@ -332,12 +337,14 @@ it("does not attach children to a same-named branch in a fork", () => {
   const result = orderStack(context, [
     {
       number: context.number,
+      isCrossRepository: true,
       headRepository: { owner: "fork", repo: "repo" },
       headRefName: "feature",
       baseRefName: "main",
     },
     {
       number: parsePrNumber(2),
+      isCrossRepository: false,
       headRepository: context,
       headRefName: "child",
       baseRefName: "feature",

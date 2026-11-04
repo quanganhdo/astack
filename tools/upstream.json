@@ -4,7 +4,7 @@
     "pstack": {
       "upstreamPath": "pstack",
       "localPath": "plugins/astack",
-      "sha": "df581122cde17e6e27686b5a448bde23e4ad4318",
+      "sha": "c742dd61706fbacc1b95f1a20b7b988cf096ce6c",
       "exclude": [
         ".cursor-plugin/",
         ".gitignore",
@@ -14,7 +14,8 @@
         "automations/",
         "docs/",
         "skills/make-bot-ui/",
-        "skills/poteto-mode/scripts/worktree-audit.sh"
+        "skills/poteto-mode/scripts/worktree-audit.sh",
+        "plugin.json"
       ]
     },
     "cursor-team-kit": {

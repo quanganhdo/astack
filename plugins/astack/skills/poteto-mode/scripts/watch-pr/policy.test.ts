@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { WatchDeadline } from "./deadline.ts";
-import { WatcherQueryError } from "./github.ts";
+import { WatcherQueryError, parseFastCheck } from "./github.ts";
 import {
   applyQueueSnapshot,
   assessGitHubMerge,
@@ -11,6 +11,7 @@ import {
   queryBackoffSeconds,
   readSnapshot,
   runQueued,
+  runSimple,
   selectTierMajorStackDecision,
 } from "./policy.ts";
 import {
@@ -64,7 +65,7 @@ describe("readiness truth table", () => {
     ];
     for (const [mergeStateStatus, headRollupState, expected] of cases) {
       expect(
-        assessGitHubMerge({ mergeStateStatus, headRollupState }).kind,
+        assessGitHubMerge({ mergeStateStatus, headRollupState }).kind
       ).toBe(expected);
     }
   });
@@ -107,7 +108,7 @@ describe("snapshot query planning", () => {
     expect(snapshot.ci.kind).toBe("ci-pending");
     expect(reader.calls).toEqual([
       "pullRequest",
-      "reviewThreads",
+      "reviewThreadPage:null",
       "checksFastPath",
       "revision",
     ]);
@@ -147,7 +148,7 @@ describe("snapshot query planning", () => {
           pendingHistory: "include",
           allowDraft: false,
         })
-      ).kind,
+      ).kind
     ).toBe("merged");
     expect(reader.calls).toEqual(["pullRequest"]);
   });
@@ -321,7 +322,7 @@ describe("queued-stack cadence", () => {
       state,
       await openSnapshot(queue[0]),
       0,
-      options,
+      options
     );
     expect(first.completedSweepRows).toBeNull();
     state = first.state;
@@ -329,10 +330,10 @@ describe("queued-stack cadence", () => {
       state,
       await openSnapshot(queue[1]),
       5,
-      options,
+      options
     );
     expect(
-      second.completedSweepRows?.map((row) => Number(row.context.number)),
+      second.completedSweepRows?.map((row) => Number(row.context.number))
     ).toEqual([30, 31]);
     expect(second.state.nextSweepAt).toBe(305);
   });
@@ -403,7 +404,7 @@ describe("queued-stack cadence", () => {
       state,
       await openSnapshot(queue[0]),
       0,
-      options,
+      options
     ).state;
     const first = evaluateQueue(state, options);
     expect(first.kind).toBe("waiting");
@@ -427,7 +428,10 @@ describe("review gate", () => {
   it("blocks on a required review instead of reporting a blocked PR ready", async () => {
     const snapshot = await readSnapshot({
       reader: fakeReader({
-        facts: { reviewDecision: "REVIEW_REQUIRED", mergeStateStatus: "BLOCKED" },
+        facts: {
+          reviewDecision: "REVIEW_REQUIRED",
+          mergeStateStatus: "BLOCKED",
+        },
       }),
       context: context(23),
       pendingHistory: "omit",
@@ -435,10 +439,14 @@ describe("review gate", () => {
     });
     expect(classifyPr(snapshot)).toEqual({
       kind: "blocker",
-      blocker: { kind: "merge-gate", pr: context(23), reason: "review-required" },
+      blocker: {
+        kind: "merge-gate",
+        pr: context(23),
+        reason: "review-required",
+      },
     });
     expect(
-      selectTierMajorStackDecision([snapshot] as NonEmpty<typeof snapshot>),
+      selectTierMajorStackDecision([snapshot] as NonEmpty<typeof snapshot>)
     ).toMatchObject({
       kind: "blocker",
       blocker: { kind: "merge-gate", reason: "review-required" },
@@ -458,10 +466,37 @@ describe("review gate", () => {
     });
   });
 
+  it("keeps owner approval behind the review gate when CI reports ACTION_REQUIRED", async () => {
+    const gate = parseFastCheck({
+      name: "Code Review Gate",
+      state: "ACTION_REQUIRED",
+      bucket: "fail",
+    });
+    const snapshot = await readSnapshot({
+      reader: fakeReader({
+        facts: {
+          reviewDecision: "REVIEW_REQUIRED",
+          mergeStateStatus: "BLOCKED",
+        },
+        fastPath: { kind: "checks", checks: [passingCheck(), gate] },
+      }),
+      context: context(27),
+      pendingHistory: "omit",
+      allowDraft: false,
+    });
+    expect(classifyPr(snapshot)).toMatchObject({
+      kind: "blocker",
+      blocker: { kind: "merge-gate", reason: "review-required" },
+    });
+  });
+
   it("waits for pending checks before reporting the review gate", async () => {
     const snapshot = await readSnapshot({
       reader: fakeReader({
-        facts: { reviewDecision: "REVIEW_REQUIRED", mergeStateStatus: "BLOCKED" },
+        facts: {
+          reviewDecision: "REVIEW_REQUIRED",
+          mergeStateStatus: "BLOCKED",
+        },
         fastPath: { kind: "checks", checks: [pendingCheck()] },
       }),
       context: context(26),
@@ -474,7 +509,10 @@ describe("review gate", () => {
   it("still reports changes requested as a merge-gate blocker", async () => {
     const snapshot = await readSnapshot({
       reader: fakeReader({
-        facts: { reviewDecision: "CHANGES_REQUESTED", mergeStateStatus: "BLOCKED" },
+        facts: {
+          reviewDecision: "CHANGES_REQUESTED",
+          mergeStateStatus: "BLOCKED",
+        },
       }),
       context: context(25),
       pendingHistory: "omit",
@@ -484,5 +522,102 @@ describe("review gate", () => {
       kind: "blocker",
       blocker: { kind: "merge-gate", reason: "changes-requested" },
     });
+  });
+});
+
+describe("polling deadline sleeps", () => {
+  for (const mode of ["single", "queued-stack", "query-retry"] as const) {
+    it(`caps ${mode} sleeps at the configured deadline`, async () => {
+      let now = 0;
+      const sleeps: number[] = [];
+      const pending = fakeReader({
+        fastPath: { kind: "checks", checks: [pendingCheck()] },
+      });
+      const reader =
+        mode === "query-retry"
+          ? {
+              ...pending,
+              async pullRequest(): Promise<PullRequestFacts> {
+                throw new WatcherQueryError({
+                  kind: "command-exit",
+                  retryable: true,
+                  code: 1,
+                  detail: "temporary failure",
+                });
+              },
+            }
+          : pending;
+      const dependencies = {
+        deadline: new WatchDeadline(5, () => now),
+        reader,
+        clock: {
+          now: () => now,
+          observedAt: () => "2026-07-26T00:00:00.000Z",
+          async sleep(seconds: number) {
+            sleeps.push(seconds);
+            now += seconds;
+          },
+        },
+        emit() {},
+      };
+      const polling = { ...options, interval: 60, timeout: 5 };
+      const result =
+        mode === "queued-stack"
+          ? await runQueued({
+              dependencies,
+              contexts: [context(1)],
+              options: polling,
+            })
+          : await runSimple({
+              dependencies,
+              contexts: [context(1)],
+              mode: "single",
+              statusOnly: false,
+              options: polling,
+            });
+      expect(result.kind).toBe("TIMEOUT");
+      expect(sleeps).toEqual([5]);
+      expect(now).toBe(5);
+    });
+  }
+  it("preserves the polling interval when the deadline is disabled", async () => {
+    let now = 0;
+    let reads = 0;
+    const sleeps: number[] = [];
+    const pending = fakeReader({
+      fastPath: { kind: "checks", checks: [pendingCheck()] },
+    });
+    const passed = fakeReader({
+      fastPath: { kind: "checks", checks: [passingCheck()] },
+    });
+    const result = await runSimple({
+      dependencies: {
+        deadline: new WatchDeadline(0, () => now),
+        reader: {
+          ...pending,
+          async checksFastPath(pr) {
+            reads += 1;
+            return reads === 1
+              ? pending.checksFastPath(pr)
+              : passed.checksFastPath(pr);
+          },
+        },
+        clock: {
+          now: () => now,
+          observedAt: () => "2026-07-26T00:00:00.000Z",
+          async sleep(seconds) {
+            sleeps.push(seconds);
+            now += seconds;
+          },
+        },
+        emit() {},
+      },
+      contexts: [context(1)],
+      mode: "single",
+      statusOnly: false,
+      options: { ...options, interval: 60, timeout: 0 },
+    });
+    expect(result.kind).toBe("READY");
+    expect(sleeps).toEqual([60]);
   });
 });

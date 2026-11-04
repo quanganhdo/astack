@@ -1,5 +1,11 @@
 # AStack changes
 
+## 0.1.5 - Original PStack 0.15.36
+
+Adapted original cursor/plugins/pstack at c742dd61706fbacc1b95f1a20b7b988cf096ce6c. Adds formal verification creation and maintenance, statechart compilation, ketchup, ketchup-video, in-your-own-words, and sharpen. Imports the shorter upstream workflows and PR watcher corrections while retaining native model settings, review gates, deadlines, and merge safeguards.
+
+Orchestrate now uses host tools and a durable project store. Removes the obsolete orch CLI, including the formerly forked scripts/orch/orch.test.ts and scripts/orch/store.ts. Native Codex packaging, command catalog, and checks cover the new skills.
+
 ## 0.1.4 - Consistent AStack naming
 
 Rename model setup to `setup-astack` and use AStack consistently in agent descriptions, runtime guidance, packaging, and generated configuration. Update upstream translation so future imports retain the new command and directory names. New checkpoints use `astack/resume`; existing checkpoints remain readable from the legacy location. Preserve original source attribution, upstream URLs, and release history. Add regression checks for naming, mapped sync paths, and checkpoint compatibility.

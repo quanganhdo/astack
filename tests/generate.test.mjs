@@ -127,6 +127,16 @@ describe("regions", () => {
     expect(() => regions({ ...models, roles })).toThrow('models.json: no "interrogate reviewers" role');
   });
 
+  test("interrogate receives configured reviewer defaults without the retired reviewer table", () => {
+    const file = "plugins/astack/skills/interrogate/SKILL.md";
+    const current = "---\nname: interrogate\ndescription: Review a change\n---\n\n# Interrogate\n\n## Fan out\n\nRead the interrogate reviewers line.\n";
+    const stamped = deriveSkill(file, current, models, new Map());
+    expect(stamped).toContain("- interrogate reviewers:");
+    expect(stamped).toContain("## Reasoning effort");
+    expect(stamped).not.toContain("| Reviewer A");
+    expect(deriveSkill(file, stamped, models, new Map())).toBe(stamped);
+  });
+
   test("applyRegions leaves a file the generator does not own untouched", () => {
     const text = "# other\n\n## Models\n\nprose\n";
     expect(applyRegions("plugins/astack/skills/other/SKILL.md", text, models)).toBe(text);

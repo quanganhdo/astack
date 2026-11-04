@@ -4,7 +4,7 @@ Start with the [README](../README.md).
 
 ## Slash commands
 
-The package includes 58 skill directories: 34 public skills and 24 `principle-*` references. Claude Code uses `/astack:<name>`. In Codex, request a skill by name or install the [optional shortcuts](#codex) for the `/name` form below.
+The package includes 65 skill directories: 41 public skills and 24 `principle-*` references. Claude Code uses `/astack:<name>`. In Codex, request a skill by name or install the [optional shortcuts](#codex) for the `/name` form below.
 
 Find each skill's instructions in the [skills tree](../plugins/astack/skills/).
 
@@ -27,6 +27,10 @@ Find each skill's instructions in the [skills tree](../plugins/astack/skills/).
 | `/technical-writing` | write docs, RFCs, readmes, PR descriptions, and commit messages to one layered standard |
 | `/benchmark-checklist` | vet measurements before reporting a speedup or choosing an option |
 | `/bro` | restate the last message in plain human language, no jargon |
+| `/in-your-own-words` | restate the goal and problem before work starts |
+| `/sharpen` | rewrite a prompt so its goal and constraints are clear |
+| `/ketchup` | catch up on completed work and every decision waiting on you |
+| `/ketchup-video` | catch up with a short subtitled video and written decisions |
 | `/figure-it-out` | design a rigorous, auditable playbook for a task no bundled playbook fits |
 | `/show-me-your-work` | log decisions to a reviewable tsv decision trail |
 | `/blast-radius` | find what a change could break beyond the diff and prove safety by running code |
@@ -36,6 +40,9 @@ Find each skill's instructions in the [skills tree](../plugins/astack/skills/).
 | `/no-comments` | strip comments before review, fix the accepted findings, encode claimed constraints |
 | `/create-verification-skill` | generate a project-local verification skill and feature map |
 | `/maintain-verification-skill` | re-sync a drifted verification skill and its feature map |
+| `/create-formal-verification-skill` | verify a property of the code and leave a project-local check |
+| `/maintain-formal-verification-skill` | bring formal checks back in line with changed code |
+| `/statechart` | check a TLA+ model and draw its states and shortest bug paths |
 | `/deslop` | deslop a diff before commit |
 | `/babysit` | monitor an open PR, fix CI/comments, keep it merge-ready |
 | `/thermo-nuclear-code-quality-review` | extremely strict maintainability audit |
@@ -63,10 +70,12 @@ Use [setup-astack](../plugins/astack/skills/setup-astack/SKILL.md) to select ava
 
 Bun is needed for bundled scripts. GitHub workflows need authenticated `gh`; some inherited stack workflows use Graphite. AStack does not install tools or change global settings implicitly.
 
+The statechart launcher accepts Node.js 22.18 through 22.x, Node.js 23.6 or later, Bun 1.1.5 or later, or Deno 2.0 or later. It uses mise to prepare TLC and Java on its first run and needs network access for that setup. Its tests use Node.js and the pinned `fast-check` dependency. The repository's `.mise.toml` pins the Bun and Node.js versions used by CI.
+
 ## Maintenance
 
 See [upstream workflow](upstream.md), [adaptations](adaptations.md), and [CONTRIBUTING](../CONTRIBUTING.md). The command table above is the generator's source for Codex prompt descriptions; maintain one row per public skill.
 
-The skill tree is synced against upstream `df581122cde17e6e27686b5a448bde23e4ad4318` (v0.15.15). The machine-readable pin in `tools/upstream.json` is authoritative. The update tool keeps this sentence current.
+The skill tree is synced against upstream `c742dd61706fbacc1b95f1a20b7b988cf096ce6c` (v0.15.36). The machine-readable pin in `tools/upstream.json` is authoritative. The update tool keeps this sentence current.
 
 See [NOTICE](../NOTICE.md) and [LICENSE](../LICENSE) for attribution.

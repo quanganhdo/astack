@@ -1,6 +1,132 @@
 {
   "substitutions": [
     {
+      "pattern": "a chart or diagram from `/visualize`",
+      "files": "^skills/ketchup/",
+      "replacement": "a chart or diagram from an available visualization tool",
+      "rationale": "Resolve visuals through actual host capabilities instead of a Cursor-only slash command."
+    },
+    {
+      "pattern": "a `/visualize` chart for numbers",
+      "files": "^skills/ketchup/",
+      "replacement": "an available plotting or visualization tool for numbers",
+      "rationale": "Preserve data visualizations without requiring a slash command that the native host may not expose."
+    },
+    {
+      "pattern": "every Task spawn",
+      "files": "^agents/poteto-agent\\.md$",
+      "replacement": "every Agent spawn",
+      "rationale": "The parent owns native Agent dispatch."
+    },
+    {
+      "pattern": "`.cursor-plugin/plugin.json`",
+      "files": "^agents/poteto-agent\\.md$",
+      "replacement": "`.claude-plugin/plugin.json`",
+      "rationale": "The native Claude plugin manifest identifies the installed version."
+    },
+    {
+      "pattern": "pstack is absent",
+      "files": "^agents/poteto-agent\\.md$",
+      "replacement": "AStack is absent",
+      "rationale": "Use the native package identity in discovery errors."
+    },
+    {
+      "pattern": "the pstack [`/statechart`]",
+      "files": "^skills/create-formal-verification-skill/",
+      "replacement": "the AStack [`/statechart`]",
+      "rationale": "The generated verification skill resolves the native AStack statechart skill."
+    },
+    {
+      "pattern": "subagent_type: \"comment-sicko\"",
+      "files": "^skills/no-comments/",
+      "replacement": "subagent_type: \"astack:comment-sicko\"",
+      "rationale": "The renamed upstream agent still requires the native plugin namespace."
+    },
+    {
+      "pattern": "Families go by prefix: `claude-*`, and `grok-*` with `cursor-grok-*` and `composer-*`. A refused `composer-*` entry runs on `grok-4.7-xhigh-fast`.",
+      "files": "^skills/arena/SKILL\\.md$",
+      "replacement": "Families go by model name, such as Opus, Fable, or Sonnet. If a configured entry is refused, use its family's default from [Models](#models).",
+      "rationale": "Resolve Cursor model aliases and fallback through the native model defaults."
+    },
+    {
+      "pattern": "With the default pool, a Claude parent gets `grok-4.7-xhigh-fast`. A parent from any other family gets `claude-opus-5-5-xhigh` first.",
+      "files": "^skills/arena/SKILL\\.md$",
+      "replacement": "With the default pool, try the entries in [Models](#models) from another family in pool order.",
+      "rationale": "The cross-judge pool is stamped from native model policy."
+    },
+    {
+      "pattern": "Defaults `grok-4.7-xhigh-fast` for code, `claude-opus-5-5-xhigh` for prose and judgment",
+      "files": "^skills/poteto-mode/SKILL\\.md$",
+      "replacement": "Role defaults in [Models](#models), with \"judgment and prose\" covering prose and judgment",
+      "rationale": "Keep per-role defaults in the native Models stamp."
+    },
+    {
+      "pattern": "(`claude-opus-5-5-xhigh`)",
+      "files": "^skills/poteto-mode/SKILL\\.md$",
+      "replacement": "(default in [Models](#models))",
+      "rationale": "The strongest judgment role is configured by native model policy."
+    },
+    {
+      "pattern": "(`grok-4.7-xhigh-fast` by default)",
+      "files": "^skills/poteto-mode/SKILL\\.md$",
+      "replacement": "(default in [Models](#models))",
+      "rationale": "Verification uses the stamped swarm worker role."
+    },
+    {
+      "pattern": "Task `model`",
+      "files": "^skills/poteto-mode/SKILL\\.md$",
+      "replacement": "`model` on the `Agent` call",
+      "rationale": "Name the actual subagent call instead of the Cursor Task parameter."
+    },
+    {
+      "pattern": "Task schema",
+      "files": "^skills/poteto-mode/SKILL\\.md$",
+      "replacement": "`Agent` schema",
+      "rationale": "Name the native subagent tool schema."
+    },
+    {
+      "pattern": "Each owner is a Cursor cloud agent that builds",
+      "files": "^skills/poteto-mode/playbooks/autopilot-full\\.md$",
+      "replacement": "Each owner is a background subagent in its own worktree that builds",
+      "rationale": "Preserve one writer per PR using isolated local worktrees."
+    },
+    {
+      "pattern": "through its control skill (such as `control-ui` or `control-cli` from `cursor-team-kit`) or a named driver",
+      "files": "^skills/poteto-mode/playbooks/autopilot-full\\.md$",
+      "replacement": "through the driver selected through poteto-mode's Non-negotiables or a named available driver",
+      "rationale": "Resolve live verification through the existing driver policy."
+    },
+    {
+      "pattern": "Run workers on a new cloud VM (`environment: \"cloud\"`) unless the work needs this machine: a `control-ui` or `control-cli` runtime check (from `cursor-team-kit`), local transcripts, a simulator, or auth that exists only here.",
+      "files": "^skills/poteto-mode/playbooks/orchestrate\\.md$",
+      "replacement": "Run workers in separate local worktrees or output directories. Resolve runtime checks through poteto-mode's Non-negotiables, and give each worker only the local transcripts, simulator, or authentication access its work needs.",
+      "rationale": "The native subagent tool has no environment parameter; worktrees preserve writer isolation."
+    },
+    {
+      "pattern": "each a Cursor cloud agent, runs the change the way a user would with the matching control skill (such as `control-ui` or `control-cli` from `cursor-team-kit`)",
+      "files": "^skills/poteto-mode/playbooks/shipping\\.md$",
+      "replacement": "each a background subagent in its own worktree, runs the change the way a user would with the driver selected through poteto-mode's Non-negotiables",
+      "rationale": "Isolate verifiers locally and retain live verification through the driver policy."
+    },
+    {
+      "pattern": "in the `agent-transcripts/` directory the system prompt names",
+      "files": "^skills/reflect/SKILL\\.md$",
+      "replacement": "in Claude Code's per-project transcripts directory at `~/.claude/projects/<encoded-cwd>/`",
+      "rationale": "Locate transcripts within the current project rather than a Cursor system-prompt path."
+    },
+    {
+      "pattern": "<agent-transcripts>",
+      "files": "^skills/reflect/SKILL\\.md$",
+      "replacement": "<project-transcripts>",
+      "rationale": "Keep the example placeholder consistent with the native per-project transcript directory."
+    },
+    {
+      "pattern": "`environment: \"cloud\"`, `run_in_background: true`, and the step 3 model, left unset for `auto` or `inherit-parent`. Use `environment: \"local\"` only when the worker needs access to something on the user's computer.",
+      "files": "^skills/swarm/SKILL\\.md$",
+      "replacement": "`run_in_background: true`, and the step 3 model, left unset for `auto` or `inherit-parent`. Claude Code subagents all run on this machine, so isolation comes from the worktree or output directory assigned in Phase A, not from a remote environment.",
+      "rationale": "The upstream model-selection step moved; native subagents still isolate output locally."
+    },
+    {
       "regex": "default to one each on `(?:claude|gpt|grok|gemini|composer)-[^`]+` and `(?:claude|gpt|grok|gemini|composer)-[^`]+`\\.",
       "files": "^skills/arena/SKILL\\.md$",
       "replacement": "run one each on the defaults in [Models](#models).",
@@ -39,8 +165,8 @@
       "rationale": "Benchmark preparation must work on supported hosts without a Linux-only utility."
     },
     {
-      "pattern": "- Shipping UI / IDE / CLI → the matching control skill. `cursor-team-kit` publishes `control-cli` (CLIs and TUIs) and `control-ui` (browser / Electron / web UIs). For bug fixes, reproduce first on the same surface yourself. Hand to the user only under the narrow Bug fix step 1 exception.",
-      "replacement": "- Shipping UI / IDE / CLI → the driver skill. `run` ships with Claude Code and the model can invoke it for CLIs, TUIs, servers, and browser or Electron apps. The bundled `verify` runs only when the user types `/verify`, so for UIs use the project `verify` skill at `.claude/skills/verify/` (generate it with `/create-verification-skill`) and fall back to `run` when the repo has none. For bug fixes, reproduce first on the same surface yourself. Hand to the user only under the narrow Bug fix step 1 exception.",
+      "pattern": "- Shipping UI / IDE / CLI \u2192 the matching control skill. `cursor-team-kit` publishes `control-cli` (CLIs and TUIs) and `control-ui` (browser / Electron / web UIs). For bug fixes, reproduce first on the same surface yourself. Hand to the user only under the narrow Bug fix step 1 exception.",
+      "replacement": "- Shipping UI / IDE / CLI \u2192 the driver skill. `run` ships with Claude Code and the model can invoke it for CLIs, TUIs, servers, and browser or Electron apps. The bundled `verify` runs only when the user types `/verify`, so for UIs use the project `verify` skill at `.claude/skills/verify/` (generate it with `/create-verification-skill`) and fall back to `run` when the repo has none. For bug fixes, reproduce first on the same surface yourself. Hand to the user only under the narrow Bug fix step 1 exception.",
       "rationale": "Resolve surface drivers through the Claude Code and Codex portability policy instead of unavailable Cursor control plugins."
     },
     {
@@ -50,7 +176,7 @@
     },
     {
       "pattern": "The system prompt names the workspace's `agent-transcripts/` directory.",
-      "replacement": "Claude Code stores them at `~/.claude/projects/<encoded-cwd>/*.jsonl`, where `<encoded-cwd>` is the workspace's working directory with `/` → `-`.",
+      "replacement": "Claude Code stores them at `~/.claude/projects/<encoded-cwd>/*.jsonl`, where `<encoded-cwd>` is the workspace's working directory with `/` \u2192 `-`.",
       "rationale": "Claude Code's system prompt does not name a transcripts directory, so the port names the path and its encoding"
     },
     {
