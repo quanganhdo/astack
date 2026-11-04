@@ -18,7 +18,7 @@
 //   plugins/astack/models.json (the model policy: role defaults, diverse panel,
 //   available slugs, Codex equivalents)
 //     -> each model-consuming skill's "## Models" and "## Reasoning effort" sections
-//     -> setup-astack's Models section and override-sheet block, and interrogate's reviewer table
+//     -> setup-astack's Models section and override-sheet block, and each workflow's Models section
 //     -> the "## Model names" section of poteto-mode/references/codex-tools.md
 //     -> one effort agent pair per level in plugins/astack/effort-agents/
 //   the Per-skill notes table in poteto-mode/references/codex-tools.md
@@ -340,10 +340,9 @@ export function regions(models) {
     if (!rolesBySkill.has(r.skill)) rolesBySkill.set(r.skill, []);
     rolesBySkill.get(r.skill).push(r);
   }
-  const reviewers = requiredRole(models, "interrogate reviewers").models;
+  requiredRole(models, "interrogate reviewers");
   return [
     ...[...rolesBySkill]
-      .filter(([skill]) => skill !== "interrogate")
       .map(([skill, roles]) => ({
         file: skillFile(skill),
         name: "Models section",
@@ -351,12 +350,6 @@ export function regions(models) {
         appendHeading: "## Models",
         render: () => blankPadded(modelsSection(roles)),
       })),
-    {
-      file: skillFile("interrogate"),
-      name: "reviewer table",
-      locate: tableRows("| Subagent | Default model |", "| Reviewer "),
-      render: () => reviewers.map((m, i) => `| Reviewer ${String.fromCharCode(65 + i)} | ${code(m)} |`),
-    },
     ...[...rolesBySkill].map(([skill]) => ({
       file: skillFile(skill),
       name: "Reasoning effort section",

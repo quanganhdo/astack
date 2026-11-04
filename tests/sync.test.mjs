@@ -51,6 +51,11 @@ function sync(overrides) {
 }
 
 describe("applySubstitutions", () => {
+  test("the renamed comment-sicko agent uses its native plugin namespace", () => {
+    const { text } = applySubstitutions('Spawn `Task` with `subagent_type: "comment-sicko"`.', RULES.substitutions, "skills/no-comments/SKILL.md");
+    expect(text).toBe('Spawn `Agent` with `subagent_type: "astack:comment-sicko"`.');
+    expect(applySubstitutions(text, RULES.substitutions, "skills/no-comments/SKILL.md").text).toBe(text);
+  });
   test("rewrites Cursor primitives and counts per rule", () => {
     const { text, counts } = applySubstitutions(
       "Use the `Task` tool, then AskQuestion. Skills live in .cursor/skills/.",
@@ -112,6 +117,84 @@ describe("applySubstitutions", () => {
     expect(applySubstitutions("(default `true`)", RULES.substitutions, "skills/reflect/SKILL.md").text).toBe(
       "(default `true`)",
     );
+  });
+
+  test.each([
+    [
+        "skills/arena/SKILL.md",
+        "Families go by prefix: `claude-*`, and `grok-*` with `cursor-grok-*` and `composer-*`. A refused `composer-*` entry runs on `grok-4.7-xhigh-fast`.",
+        "Families go by model name, such as Opus, Fable, or Sonnet. If a configured entry is refused, use its family's default from [Models](#models)."
+    ],
+    [
+        "skills/arena/SKILL.md",
+        "With the default pool, a Claude parent gets `grok-4.7-xhigh-fast`. A parent from any other family gets `claude-opus-5-5-xhigh` first.",
+        "With the default pool, try the entries in [Models](#models) from another family in pool order."
+    ],
+    [
+        "skills/poteto-mode/SKILL.md",
+        "Defaults `grok-4.7-xhigh-fast` for code, `claude-opus-5-5-xhigh` for prose and judgment",
+        "Role defaults in [Models](#models), with \"judgment and prose\" covering prose and judgment"
+    ],
+    [
+        "skills/poteto-mode/SKILL.md",
+        "(`claude-opus-5-5-xhigh`)",
+        "(default in [Models](#models))"
+    ],
+    [
+        "skills/poteto-mode/SKILL.md",
+        "(`grok-4.7-xhigh-fast` by default)",
+        "(default in [Models](#models))"
+    ],
+    [
+        "skills/poteto-mode/SKILL.md",
+        "Task `model`",
+        "`model` on the `Agent` call"
+    ],
+    [
+        "skills/poteto-mode/SKILL.md",
+        "Task schema",
+        "`Agent` schema"
+    ],
+    [
+        "skills/poteto-mode/playbooks/autopilot-full.md",
+        "Each owner is a Cursor cloud agent that builds",
+        "Each owner is a background subagent in its own worktree that builds"
+    ],
+    [
+        "skills/poteto-mode/playbooks/autopilot-full.md",
+        "through its control skill (such as `control-ui` or `control-cli` from `cursor-team-kit`) or a named driver",
+        "through the driver selected through poteto-mode's Non-negotiables or a named available driver"
+    ],
+    [
+        "skills/poteto-mode/playbooks/orchestrate.md",
+        "Run workers on a new cloud VM (`environment: \"cloud\"`) unless the work needs this machine: a `control-ui` or `control-cli` runtime check (from `cursor-team-kit`), local transcripts, a simulator, or auth that exists only here.",
+        "Run workers in separate local worktrees or output directories. Resolve runtime checks through poteto-mode's Non-negotiables, and give each worker only the local transcripts, simulator, or authentication access its work needs."
+    ],
+    [
+        "skills/poteto-mode/playbooks/shipping.md",
+        "each a Cursor cloud agent, runs the change the way a user would with the matching control skill (such as `control-ui` or `control-cli` from `cursor-team-kit`)",
+        "each a background subagent in its own worktree, runs the change the way a user would with the driver selected through poteto-mode's Non-negotiables"
+    ],
+    [
+        "skills/reflect/SKILL.md",
+        "in the `agent-transcripts/` directory the system prompt names",
+        "in Claude Code's per-project transcripts directory at `~/.claude/projects/<encoded-cwd>/`"
+    ],
+    [
+        "skills/reflect/SKILL.md",
+        "<agent-transcripts>",
+        "<project-transcripts>"
+    ],
+    [
+        "skills/swarm/SKILL.md",
+        "`environment: \"cloud\"`, `run_in_background: true`, and the step 3 model, left unset for `auto` or `inherit-parent`. Use `environment: \"local\"` only when the worker needs access to something on the user's computer.",
+        "`run_in_background: true`, and the step 3 model, left unset for `auto` or `inherit-parent`. Claude Code subagents all run on this machine, so isolation comes from the worktree or output directory assigned in Phase A, not from a remote environment."
+    ]
+])("%s: translates PStack 0.15.36 dispatch and model prose", (rel, upstream, expected) => {
+    const { text } = applySubstitutions(upstream, RULES.substitutions, rel);
+    expect(text).toBe(expected);
+    expect(denylistHits(rel, text, RULES.denylist)).toEqual([]);
+    expect(applySubstitutions(text, RULES.substitutions, rel).text).toBe(text);
   });
 
   test("every rule's replacement is free of the denylist", () => {

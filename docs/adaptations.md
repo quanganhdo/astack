@@ -20,3 +20,11 @@ AStack uses the `astack:` plugin namespace and `astack-models.md` configuration.
 The Codex adapter uses available tools and model capabilities rather than assuming that every Codex surface exposes the same tool names. User and project instructions take precedence over all plugin guidance.
 
 New functionality should be placed in the smallest applicable layer. Platform-specific preferences belong in the consuming project’s instructions. When fixing a portability defect, add a behavioral fixture to the existing tests and make the translation reproducible.
+
+The upstream root `plugin.json` and `.cursor-plugin/` manifest are excluded because AStack generates native Claude Code and Codex manifests. Cursor's setup and guide changes are reconciled into AStack's own setup, help, catalog, and runtime mapping.
+
+PStack 0.15.36 replaces the Orchestrate bookkeeping scripts with host task tools and a durable project store. AStack removes the old `orch` CLI and maps the new workflow to local worktrees and available host capabilities. Its operator landing policy, per-round verification, and merge safeguards remain declared forks.
+
+The statechart tree retains upstream's compiler, test corpus, runtime launcher, and attribution. AStack adds a frozen Bun lockfile for its test dependency and runs its strict typecheck and suite from `tools/check.sh`, sharing the existing bundled TypeScript toolchain. Declared adaptations preserve the exit-code union type, resolve relative symlink fixtures on macOS, and await Node test callbacks without returning fixture objects. Live TLC tests require `TLA2TOOLS`; a run without it does not establish live model-checker coverage. The pinned mise setup supplies Bun and Node.js in both CI workflows.
+
+Interrogate now delegates adversaries through Arena. The generator stamps its reviewer role into a Models section, matching the other workflow skills, because upstream removed the former reviewer table.
